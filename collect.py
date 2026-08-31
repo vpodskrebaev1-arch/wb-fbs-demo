@@ -380,7 +380,12 @@ def pull_finance(token, keep_srids=None, acc=None):
     заказам (в основном старый FBW) в сводку по кабинету учитываются через
     `acc`, но в памяти не оседают.
     """
-    out, d0 = [], TODAY - datetime.timedelta(days=7 * FIN_WEEKS_BACK)
+    # Раньше начала окна заказов транзакций по нашим srid быть не может:
+    # строка финотчёта не может опередить сам заказ. Недели до START — это
+    # десятки тысяч чужих строк ради нескольких совпадений, а каждая страница
+    # стоит минуту лимита WB. Поэтому глубина считается от окна, а не фиксирована.
+    out = []
+    d0 = max(START, TODAY - datetime.timedelta(days=7 * FIN_WEEKS_BACK))
     while d0 <= TODAY:
         d1 = min(d0 + datetime.timedelta(days=6), TODAY)
         rrdid, pages = 0, 0
