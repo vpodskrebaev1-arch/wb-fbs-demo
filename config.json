@@ -1,0 +1,33 @@
+{
+  "brand": "Демо FBS",
+  "cabinets": [
+    {
+      "key": "ip",
+      "title": "Кабинет ИП",
+      "env": "WB_TOKEN_IP"
+    }
+  ],
+  "window_days": 29,
+  "maturity_days": 12,
+  "mature_window_days": 14,
+  "min_mature_orders": 150,
+  "ads_mode": "fbs_share",
+  "rates_fallback": "cabinet",
+  "anonymize": true,
+  "override": {
+    "ip": {
+      "buyout": null,
+      "payout_share": null,
+      "logistics_per_order": null,
+      "handling_per_order": null,
+      "penalty_per_order": null
+    }
+  },
+  "speed_basis": "scan",
+  "returns_match": "по МП",
+  "pvz_storage": {
+    "free_days": 3,
+    "price_per_day": 10,
+    "dispose_day": 8
+  }
+}
