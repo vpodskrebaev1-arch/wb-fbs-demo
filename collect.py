@@ -386,10 +386,24 @@ def pull_finance(token, keep_srids=None, acc=None):
     # стоит минуту лимита WB. Поэтому глубина считается от окна, а не фиксирована.
     out = []
     d0 = max(START, TODAY - datetime.timedelta(days=7 * FIN_WEEKS_BACK))
-    while d0 <= TODAY:
+    # Бюджет времени. Финотчёт — единственное место, где прогон может уехать
+    # на часы: WB отдаёт страницу в минуту, а у крупного продавца страниц
+    # сотни. Упереться в таймаут задания и не собрать страницу вообще —
+    # хуже, чем собрать её на неполном отчёте: ставки считаются по выборке,
+    # и половина выборки всё равно даёт разумные проценты. Поэтому здесь
+    # мягкая остановка, а не жёсткое убийство снаружи.
+    budget = float(os.environ.get("FIN_BUDGET_MIN", "45")) * 60
+    t_fin = time.time()
+    stop = False
+    while d0 <= TODAY and not stop:
         d1 = min(d0 + datetime.timedelta(days=6), TODAY)
         rrdid, pages = 0, 0
         while pages < 80:
+            if time.time() - t_fin > budget:
+                log(f"    финотчёт: бюджет {budget/60:.0f} мин исчерпан на неделе "
+                    f"{d0}—{d1}; ставки посчитаю по тому, что успел собрать")
+                stop = True
+                break
             batch = call(token, H_FIN, "/api/finance/v1/sales-reports/detailed",
                          method="POST",
                          body={"dateFrom": d0.isoformat(), "dateTo": d1.isoformat(),
